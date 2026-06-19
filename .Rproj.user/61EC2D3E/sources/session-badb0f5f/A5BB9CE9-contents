@@ -9,8 +9,8 @@
 library(shiny)
 library(ggplot2)
 library(readxl)
-dataset <- read_excel("dataset.xlsx")
-View(dataset)
+dataset_1_ <- read_excel("dataset (1).xlsx")
+View(dataset_1_)
 
 
 # Define UI for application
@@ -43,7 +43,7 @@ ui <- fluidPage(
           
           selectInput("genero", "Seleccione un género musical:",
                       
-                      choices = "Todos",
+                      choices = c("Todos"),
                       selected = "Todos"
                       )
           ),
@@ -101,7 +101,6 @@ server <- function(input, output, session){
   
   #dataset filtrado por género
   datos_filtrados <- reactive({
-    req(input$genero)
     if(input$genero == "Todos"){
       dataset
     } else {
@@ -110,7 +109,6 @@ server <- function(input, output, session){
   })
   
   #gráfico
-  req(input$var_explorar %in% names(datos))
   output$hist_exploracion <- renderPlot({
     datos <- datos_filtrados()
     columna <- datos[[input$var_explorar]]
