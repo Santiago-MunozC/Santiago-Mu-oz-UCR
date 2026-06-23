@@ -8,44 +8,114 @@
 #
 
 library(shiny)
+library(readxl)
+library(ggplot2)
 
-# Define UI for application that draws a histogram
+datos <- read_excel("dataset.xlsx")
+
+
 ui <- fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
+  
+  titlePanel("Relación entre Energy y Loudness"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("genero",                             #escoger entre categorías
+                  "Seleccione un género:",
+                  choices = unique(datos$Genre))
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotOutput("grafico"),
+      br(),
+      textOutput("cantidad"),
+      br(),
+      textOutput("correlacion"),
+      br(),
+      textOutput("interpretacion")
     )
+  )
 )
 
-# Define server logic required to draw a histogram
+# Define server logic required
 server <- function(input, output) {
-
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
+  
+  datos_filtrados <- reactive({
+    subset(datos, Genre == input$genero)
+  })
+  
+  output$grafico <- renderPlot({
+    ggplot(
+      datos_filtrados(),
+      aes(x = Loudness, y = Energy)
+    ) +
+      
+      geom_point(
+        color = "navy",
+        size = 3
+      ) +
+      
+      geom_smooth(
+        method = "lm",          #modelo lineal, error estándar
+        se = FALSE,
+        color = "gold",
+        linewidth = 1.2
+      ) +     
+      
+      labs(
+        title = paste(
+          "Relación entre Energy y Loudness:",
+          input$genero
+        ),
+        x = "Loudness",
+        y = "Energy"
+      ) +
+      
+      theme_minimal()
+  })
+  
+  output$cantidad <- renderText({
+    paste(
+      "Cantidad de canciones analizadas:",
+      nrow(datos_filtrados())
+    )
+    
+  })
+  
+  output$correlacion <- renderText({
+    r <- cor(
+      datos_filtrados()$Loudness,
+      datos_filtrados()$Energy
+    )
+    
+    paste(
+      "Coeficiente de correlación:",
+      round(r,3)
+    )
+  })
+  
+  output$interpretacion <- renderText({
+    r <- cor(
+      datos_filtrados()$Loudness,
+      datos_filtrados()$Energy
+    )
+    
+    if(r >= 0.7){
+      "Interpretación: Existe una relación fuerte entre Loudness y Energy."
+      
+    } else if(r >= 0.3){
+      "Interpretación: Existe una relación moderada entre Loudness y Energy."
+      
+    } else {
+      "Interpretación: La relación entre Loudness y Energy es débil."
+      
+    }
+    
+  })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+
+
