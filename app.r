@@ -10,8 +10,7 @@ library(ggplot2)
 library(readxl)
 
 #cargar dataset
-dataset <- read_excel("dataset.xlsx")
-
+dataset <-dataset
 ui <- fluidPage(
   
   titlePanel("Music Explorer: Análisis interactivo de canciones y artistas"),
