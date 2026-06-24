@@ -13,7 +13,7 @@ library(ggplot2)
 library(readxl)
 
 # Carga de datos
-dataset <- read_excel("Proyecto_PrograI/dataset.xlsx")
+dataset <- read_excel("dataset.xlsx")
 
 # 1. Interfaz de Usuario 
 ui <- fluidPage(
