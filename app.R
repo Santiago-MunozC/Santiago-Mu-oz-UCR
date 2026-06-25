@@ -43,7 +43,7 @@ ui <- fluidPage(
                  plotOutput("hist_exploracion"),
                  br(),
                  h4("Descripción de la variable"),
-                 verbatimTextOutput("descripcion_variable")
+                 textOutput("descripcion_variable")
                )
              )
     )
