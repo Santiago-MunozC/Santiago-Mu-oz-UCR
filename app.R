@@ -37,7 +37,7 @@ ui <- fluidPage(
                ),
                mainPanel(
                  h4("Canción recomendada"),
-                 verbatimTextOutput("resultado_recomendacion"),
+                 uiOutput("resultado_recomendacion"),
                  br(),
                  p("Esta pestaña filtra las canciones según tus preferencias y selecciona una al azar.")
                )
@@ -68,9 +68,10 @@ server <- function(input, output, session){
       artistas_disponibles <- dataset$Artist[dataset$Genre == input$rec_genero]
     }
     artistas_disponibles <- artistas_disponibles[!is.na(artistas_disponibles)]
+    
     updateSelectInput(session, "rec_artista",
                       choices = c("Todos", sort(unique(artistas_disponibles))),
-                      selected = "Todos") #opción de "todos" seleccionada por default
+                      selected = "Todos") 
   })
   
   #para filtrar y seleccionar una canción aleatoria
@@ -99,21 +100,30 @@ server <- function(input, output, session){
     
     #para la selección aleatoria
     fila_aleatoria <- sample(1:nrow(datos), 1)
-    return(datos[fila_aleatoria, ])
+    return(datos[fila_aleatoria, , drop = FALSE])
   })
   
   #para mostrar la información de la canción recomendada
-  output$resultado_recomendacion <- renderText({
+  output$resultado_recomendacion <- renderUI({
     cancion <- cancion_aleatoria()
     
     if (is.null(cancion)) {
-      paste("No se encontraron canciones que cumplan con los criterios seleccionados")
+      HTML("<p style='color:red;'>No se encontraron canciones que cumplan con los criterios seleccionados.</p>")
     } else {
-      paste0(
-        "Nombre (Track): ", cancion$Track, "\n",
-        "Artista (Artist): ", cancion$Artist, "\n",
-        "Tipo de lanzamiento (Album_type): ", cancion$Album_type, "\n",
-        "Género (Genre): ", cancion$Genre
+      track_nombre   <- cancion$Track[[1]]
+      artista_nombre <- cancion$Artist[[1]]
+      tipo_album     <- cancion$Album_type[[1]]
+      genero_cancion <- cancion$Genre[[1]]
+      link_columna   <- cancion$Link[[1]]
+      
+      url_cancion <- if(!is.na(cancion$Link)) cancion$Link else "#" #link de la canción
+      
+      tagList(
+        p(strong("Nombre (Track): "), track_nombre),
+        p(strong("Artista (Artist): "), artista_nombre),
+        p(strong("Tipo de lanzamiento (Album_type): "), tipo_album),
+        p(strong("Género (Genre): "), genero_cancion),
+        p(strong("Enlace: "), a("Escuchar canción en Spotify", href = url_cancion, target = "_blank"))
       )
     }
   })
