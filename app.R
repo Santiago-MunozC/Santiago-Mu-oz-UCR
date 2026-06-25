@@ -43,9 +43,7 @@ ui <- fluidPage(
                  plotOutput("hist_exploracion"),
                  br(),
                  h4("Descripción de la variable"),
-                 verbatimTextOutput("descripcion_variable"),
-                 br(),
-                 p("Esta pestaña muestra la distribución general de las características musicales.")
+                 verbatimTextOutput("descripcion_variable")
                )
              )
     )
