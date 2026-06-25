@@ -13,6 +13,7 @@ library(readxl)
 #cargar dataset
 dataset <- read_excel("dataset.xlsx")
 
+#ui
 ui <- fluidPage(
   
   titlePanel("Music Explorer: Análisis interactivo de canciones y artistas"),
@@ -54,6 +55,7 @@ ui <- fluidPage(
   )
 )
 
+#servidor
 server <- function(input, output, session){
   
   observe({
