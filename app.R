@@ -37,8 +37,7 @@ ui <- fluidPage(
                  h4("Filtros de Análisis"),
                  selectizeInput("gen_filter", "1. Selecciona Género(s):", 
                                 choices = sort(unique(dataset$Genre)), multiple = TRUE),
-                 selectizeInput("artists_pair", "2. Selecciona Artista(s):", 
-                                choices = NULL, multiple = TRUE),
+          
                  selectInput("variable", "3. Característica musical:", 
                              choices = c("Danceability", "Energy", "Loudness", "Speechiness", 
                                          "Acousticness", "Instrumentalness", "Liveness", "Valence", "Tempo"))
@@ -76,21 +75,11 @@ server <- function(input, output, session) {
   paleta <- c("#1DB954", "#6B8E23", "#A0522D", "#DEB887", "#5D4037", "#B8860B", "#A52A2A", "#D2691E")
   
   
-  observeEvent(input$gen_filter, {
-    artistas_disponibles <- dataset %>%
-      filter(Genre %in% input$gen_filter) %>%
-      pull(Artist) %>% unique() %>% sort()
-    
-    updateSelectizeInput(session, "artists_pair", choices = artistas_disponibles)
-  })
   datos_filtrados <- reactive({
-    df <- dataset
-    if(!is.null(input$gen_filter)) df <- df %>% filter(Genre %in% input$gen_filter)
-    if(!is.null(input$artists_pair) && length(input$artists_pair) > 0) {
-      df <- df %>% filter(Artist %in% input$artists_pair)
-    }
-    df
+    if(is.null(input$gen_filter) || length(input$gen_filter) == 0) return(dataset)
+    dataset %>% filter(Genre %in% input$gen_filter)
   })
+  
   
     
     # boxplot
