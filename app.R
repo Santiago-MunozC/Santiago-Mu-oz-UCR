@@ -45,9 +45,6 @@ ui <- fluidPage(
                  h4("Descripción de la variable"),
                  verbatimTextOutput("descripcion_variable"),
                  br(),
-                 h4("Descripción del género"),
-                 verbatimTextOutput("descripcion_genero"),
-                 br(),
                  p("Esta pestaña muestra la distribución general de las características musicales.")
                )
              )
@@ -84,18 +81,6 @@ server <- function(input, output, session){
     Duration_min = "Corresponde a la duración de la canción en minutos.",
     most_playedon = "Corresponde a la Plataforma en la que la canción registra la mayor cantidad de reproducciones.",
     Genre = "Corresponde al género musical principal asociado a la canción."
-  )
-  
-  #descripción de géneros
-  descripcion_genero <- list(
-    "Pop" = "Género musical caracterizado por melodías accesibles, estructuras sencillas y una amplia aceptación comercial.",
-    "Rock" = "Género que se distingue por el uso predominante de guitarras, baterías y una fuerte expresión instrumental y vocal.",
-    "Rap" = "Estilo musical basado en la recitación rítmica de letras, generalmente acompañado por bases instrumentales o electrónicas.",
-    "Reggaetón" = "Género urbano de origen latino que combina ritmos caribeños con influencias del hip hop y la música electrónica.",
-    "K-pop" = "Género de música popular originario de Corea del Sur, reconocido por su producción moderna y sus elaboradas presentaciones artísticas.",
-    "Electrónica" = "Género que utiliza principalmente instrumentos y tecnologías digitales para la creación de sonidos y composiciones musicales.",
-    "R&B" = "Género musical que fusiona elementos de soul, jazz y pop, destacándose por su énfasis en la interpretación vocal y la emotividad.",
-    "Alternative" = "Género que engloba propuestas musicales que se diferencian de las corrientes comerciales predominantes y exploran sonidos innovadores."
   )
   
   #filtrar por el género seleccionado
@@ -164,16 +149,6 @@ server <- function(input, output, session){
   #añadir la descripción de las variables
   output$descripcion_variable <- renderText({
     descripcion_variable[[input$var_explorar]]
-  })
-  
-  #añadir la descripción del género (Simplificado sin el "Todos")
-  output$descripcion_genero <- renderText({
-    req(input$genero)
-    if (input$genero %in% names(descripcion_genero)){
-      descripcion_genero[[input$genero]]
-    } else {
-      paste(input$genero, "es uno de los géneros musicales presentes en el conjunto de datos.")
-    }
   })
 }
 
