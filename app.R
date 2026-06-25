@@ -37,9 +37,7 @@ ui <- fluidPage(
                ),
                mainPanel(
                  h4("Canción recomendada"),
-                 uiOutput("resultado_recomendacion"),
-                 br(),
-                 p("Esta pestaña filtra las canciones según tus preferencias y selecciona una al azar.")
+                 uiOutput("resultado_recomendacion")
                )
              )
     )
@@ -116,14 +114,27 @@ server <- function(input, output, session){
       genero_cancion <- cancion$Genre[[1]]
       link_columna   <- cancion$Link[[1]]
       
-      url_cancion <- if(!is.na(cancion$Link)) cancion$Link else "#"
+      url_cancion <- if(!is.na(link_columna) && link_columna != "") link_columna else "#"
+      
+      #breve descripción de cada género
+      descripcion_genero <- switch(genero_cancion,
+                                   "Pop" = "Género musical moderno y comercial, caracterizado por sus melodías pegadizas y su gran popularidad entre un público amplio.",
+                                   "Rock" = "Género musical energético y expresivo, caracterizado por el protagonismo de las guitarras, los ritmos intensos y su gran influencia en la cultura popular.",
+                                   "Rap" = "Género musical urbano, moderno y expresivo, caracterizado por sus rimas, su ritmo marcado y la transmisión de mensajes y experiencias personales a través de sus letras.",
+                                   "Reggaetón" = "Género musical urbano y moderno, caracterizado por sus ritmos contagiosos, su estilo bailable y la fusión de influencias latinas y del hip-hop.",
+                                   "K-pop" = "Género musical dinámico y contemporáneo, reconocido por combinar distintos estilos, sus melodías pegadizas, ritmos contagiosos y coreografías llamativas.",
+                                   "Electrónica" = "Género musical moderno y versátil, caracterizado por el uso de sonidos sintetizados, ritmos repetitivos y una gran variedad de estilos orientados al baile y la experimentación sonora.",
+                                   "R&B" = "Género musical moderno y melódico, caracterizado por la mezcla de soul y pop, sus ritmos suaves y su combinación de ritmos relajados con voces expresivas y letras emocionales.",
+                                   "Alternative" = "Género musical moderno y diverso, caracterizado por su sonido poco convencional, la mezcla de distintos estilos y su enfoque en la libertad creativa, la innovación y la expresión personal.")
       
       tagList(
         p(strong("Nombre (Track): "), track_nombre),
         p(strong("Artista (Artist): "), artista_nombre),
         p(strong("Tipo de lanzamiento (Album_type): "), tipo_album),
         p(strong("Género (Genre): "), genero_cancion),
-        p(strong("Enlace: "), a("Escuchar canción en Spotify", href = url_cancion, target = "_blank"))
+        p(strong("Enlace: "), a("Escuchar canción en Spotify", href = url_cancion, target = "_blank")),
+        br(),
+        p(strong("Sobre el género: "), descripcion_genero)
       )
     }
   })
