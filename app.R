@@ -11,67 +11,133 @@
 library(shiny)
 library(ggplot2)
 library(readxl)
+library(dplyr)
 
 # Carga de datos
 dataset <- read_excel("dataset.xlsx")
 
 # 1. Interfaz de Usuario 
 ui <- fluidPage(
+  tags$head(
+    tags$style(HTML("
+      body { background-color: #F9F9F9; color: #333; font-family: 'Arial', sans-serif; }
+      .well { background-color: #FFFFFF; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 10px; }
+      h3, h4 { color: #2C3E50; }
+      table { background-color: white !important; border-radius: 10px; }
+      thead { background-color: #2C3E50 !important; color: white !important; }
+    "))
+  ),
+  
   titlePanel("Music Explorer: Análisis interactivo de canciones y artistas"),
   
   tabsetPanel(
-    tabPanel("Comparación entre Géneros",
+    tabPanel("Comparación por Género",
              sidebarLayout(
                sidebarPanel(
-                 selectInput("gen_filter", "Seleccionar Géneros a comparar:", 
-                             choices = unique(dataset$Genre), multiple = TRUE),
-                 
-                 selectInput("var_comparar", "Métrica musical:",
-                             choices = c("Danceability", "Energy", "Loudness", 
-                                         "Speechiness", "Instrumentalness", "Tempo")),
-                 
-                 helpText("Nota: Selecciona varios géneros para ver su comparación estadística.")
+                 h4("Filtros de Análisis"),
+                 selectizeInput("gen_filter", "1. Selecciona Género(s):", 
+                                choices = sort(unique(dataset$Genre)), multiple = TRUE),
+                 selectizeInput("artists_pair", "2. Selecciona Artista(s):", 
+                                choices = NULL, multiple = TRUE),
+                 selectInput("variable", "3. Característica musical:", 
+                             choices = c("Danceability", "Energy", "Loudness", "Speechiness", 
+                                         "Acousticness", "Instrumentalness", "Liveness", "Valence", "Tempo"))
                ),
                mainPanel(
-                 plotOutput("genBoxplot"),
-                 h4("Resumen Estadístico (Promedios)"),
-                 tableOutput("tabla_resumen")
+                 fluidRow(
+                   column(6, plotOutput("box_genero", height = "400px")),
+                   column(6, plotOutput("barra_genero", height = "400px"))
+                 ),
+                 hr(),
+                 h3("Resumen estadístico"),
+                 tableOutput("tabla_genero")
                )
              )
     )
   )
 )
 
+
 # 2. Lógica del Servidor 
 server <- function(input, output, session) {
+  tema_spotify <- theme(
+    panel.background = element_rect(fill = "white"), 
+    plot.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "#E0E0E0"), 
+    panel.grid.minor = element_blank(),
+    text = element_text(color = "#333333"), 
+    axis.text = element_text(color = "#333333"),
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5, margin = margin(t = 15, b=12)),
+    axis.text.y = element_text(size = 11, face = "bold"),
+    axis.text.x = element_text(size = 11, face = "bold"),
+    axis.title.x = element_text(size = 14, face = "bold", hjust = 0.5, margin = margin(t = 15, b=12))
+  )
   
-  output$genBoxplot <- renderPlot({
-    df <- dataset
-    if(!is.null(input$gen_filter) && length(input$gen_filter) > 0) {
-      df <- df[df$Genre %in% input$gen_filter, ]
-    }
+  paleta <- c("#1DB954", "#6B8E23", "#A0522D", "#DEB887", "#5D4037", "#B8860B", "#A52A2A", "#D2691E")
+  
+  
+  observeEvent(input$gen_filter, {
+    artistas_disponibles <- dataset %>%
+      filter(Genre %in% input$gen_filter) %>%
+      pull(Artist) %>% unique() %>% sort()
     
-    # boxplot + jitter
-    ggplot(df, aes_string(x = "Genre", y = input$var_comparar, fill = "Genre")) +
-      geom_jitter(width = 0.2, alpha = 0.3, color = "black") + 
-      geom_boxplot(outlier.shape = NA, alpha = 0.7, size = 1) + 
-      scale_fill_brewer(palette = "Set2") +
-      theme_minimal(base_size = 15) +
-      labs(title = paste("Análisis comparativo de:", input$var_comparar),
-           subtitle = "Distribución de valores por género musical",
-           x = "Género Musical", y = input$var_comparar) +
-      theme(legend.position = "bottom",
-            plot.title = element_text(face = "bold", color = "#2c3e50"),
-            axis.text.x = element_text(angle = 45, hjust = 1))
+    updateSelectizeInput(session, "artists_pair", choices = artistas_disponibles)
+  })
+  datos_filtrados <- reactive({
+    df <- dataset
+    if(!is.null(input$gen_filter)) df <- df %>% filter(Genre %in% input$gen_filter)
+    if(!is.null(input$artists_pair) && length(input$artists_pair) > 0) {
+      df <- df %>% filter(Artist %in% input$artists_pair)
+    }
+    df
   })
   
-  output$tabla_resumen <- renderTable({
-    df <- dataset
-    if(!is.null(input$gen_filter) && length(input$gen_filter) > 0) {
-      df <- df[df$Genre %in% input$gen_filter, ]
-    }
-    aggregate(as.formula(paste(input$var_comparar, "~ Genre")), data = df, mean)
+    
+    # boxplot
+  output$box_genero <- renderPlot({
+    req(nrow(datos_filtrados()) > 0)
+    ggplot(datos_filtrados(), aes(x = Genre, y = .data[[input$variable]], fill = Genre)) +
+      geom_boxplot(alpha = 0.7) +
+      scale_fill_manual(values = colorRampPalette(paleta)(length(unique(datos_filtrados()$Genre)))) +
+      tema_spotify +
+      coord_flip() + 
+      theme(legend.position="none")+
+      labs(title = paste("Distribución de", input$variable), x = "", y = "Valor", margin= margin(b=12))
   })
+  
+  # gráfico de barras
+  output$barra_genero <- renderPlot({
+    req(nrow(datos_filtrados()) > 0)
+    resumen <- datos_filtrados() %>%
+      group_by(Genre) %>%
+      summarise(Promedio = mean(.data[[input$variable]], na.rm = TRUE))
+  
+    ggplot(resumen, aes(x = Genre, y = Promedio, fill = Genre)) +
+      geom_col(alpha = 0.7) +
+      scale_fill_manual(values = colorRampPalette(paleta)(nrow(resumen))) +
+      geom_text(aes(label = round(Promedio, 2)), hjust = -0.2, size = 4, fontface = "bold" ) +
+      coord_flip() + 
+      scale_y_continuous(limits = c(0, max(resumen$Promedio) * 1.3)) + 
+      tema_spotify +
+      theme(legend.position = "none") +
+      labs(title = paste("Promedio de", input$variable), x = "", y = "Valor Promedio")
+  })
+  
+  # tabla resumen
+  
+  output$tabla_genero <- renderTable({
+    datos_filtrados() %>%
+      group_by(Genre) %>%
+      summarise(Media = round( mean(.data[[input$variable]], na.rm = TRUE), 2),
+                Desviacion = round(sd(.data[[input$variable]], na.rm = TRUE),2)
+      )
+  }, 
+  
+  striped = TRUE,    
+  bordered = TRUE,   
+  spacing = 'm',    
+  align = 'c'        
+  )
 }
 
 # 3. Lanzar la aplicación
