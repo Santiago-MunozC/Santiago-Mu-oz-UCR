@@ -116,7 +116,7 @@ server <- function(input, output, session){
       genero_cancion <- cancion$Genre[[1]]
       link_columna   <- cancion$Link[[1]]
       
-      url_cancion <- if(!is.na(cancion$Link)) cancion$Link else "#" #link de la canción
+      url_cancion <- if(!is.na(cancion$Link)) cancion$Link else "#"
       
       tagList(
         p(strong("Nombre (Track): "), track_nombre),
@@ -131,4 +131,3 @@ server <- function(input, output, session){
 
 #ejecutar la aplicación
 shinyApp(ui = ui, server = server)
-
