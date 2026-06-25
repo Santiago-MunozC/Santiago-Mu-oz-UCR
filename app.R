@@ -8,44 +8,64 @@
 #
 
 library(shiny)
+library(ggplot2)
+library(dplyr)
+library(readxl)
 
-# Define UI for application that draws a histogram
+dataset <- read_excel("dataset.xlsx")
+
+# Interfaz de usuario
 ui <- fluidPage(
 
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
+    titlePanel("Pestaña 4"),
+    
+    tabsetPanel(
+      tabPanel("Bailabilidad y Positividad Emocional",
+               sidebarLayout(
+                 sidebarPanel(
+                   #Menú de géneros
+                   selectInput("filtro_genero", 
+                               "Seleccione un Género Musical:", 
+                               choices = unique(dataset$Genre))
+                 ),
+                 mainPanel(
+                   plotOutput("grafico_densidad") 
+                 )
+               )
+      )
     )
 )
 
-# Define server logic required to draw a histogram
+# Servidor
 server <- function(input, output) {
-
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-    })
+  
+  output$grafico_densidad <- renderPlot({
+    
+    #Filtro por el género elegido por el usuario
+    datos_filtrados <- dataset %>%
+      filter(Genre == input$filtro_genero) 
+    
+    #Gráfico
+    ggplot(datos_filtrados, aes(x = Danceability, y = Valence)) +
+      geom_density_2d_filled(alpha = 0.85) +
+      geom_point(alpha = 0.3, size = 1.2, color = "black")+
+      geom_density2d(color = "white", alpha = 0.4, linewidth = 0.3)+
+      scale_x_continuous(limits = c(0,1), expand = c(0,0))+
+      scale_y_continuous(limits = c(0,1), expand = c(0,0))+
+      scale_fill_viridis_d(option = "plasma")+
+      labs(title = paste("Concentración de canciones para el género:", input$filtro_genero), 
+           subtitle = "Las zonas encendidas muestran la mayor concentración de canciones",
+           x = "Bailabilidad (Danceability)",
+           y = "Positividad Emocional (Valence)",
+           fill = "Densidad") +
+      theme_minimal() +
+      theme(text = element_text(size = 14),
+            plot.title = element_text(face = "bold", hjust = 0.5, size = 16),
+            plot.subtitle = element_text(hjust = 0.5, color = "gray40", size = 11),
+            panel.grid.minor = element_blank(),
+            legend.position = "right"
+            )
+  })
 }
 
-# Run the application 
 shinyApp(ui = ui, server = server)
