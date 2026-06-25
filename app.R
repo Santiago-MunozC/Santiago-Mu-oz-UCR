@@ -58,6 +58,7 @@ server <- function(input, output, session){
                       choices = c("Todos", sort(generos_disponibles)))
   })
   
+  #filtrar los artistas dependiendo del género seleccionado
   observe({
     req(input$rec_genero)
     
@@ -67,8 +68,9 @@ server <- function(input, output, session){
       artistas_disponibles <- dataset$Artist[dataset$Genre == input$rec_genero]
     }
     artistas_disponibles <- artistas_disponibles[!is.na(artistas_disponibles)]
-    updateSelectInput(session, "rec_artist",
-                      choices = c("Todos los artistas" = "", sort(unique(artistas_disponibles))))
+    updateSelectInput(session, "rec_artista",
+                      choices = c("Todos", sort(unique(artistas_disponibles))),
+                      selected = "Todos") #opción de "todos" seleccionada por default
   })
   
   #para filtrar y seleccionar una canción aleatoria
@@ -82,15 +84,15 @@ server <- function(input, output, session){
     }
     
     #para filtrar por artista (solo si se seleccionó uno)
-    if (input$rec_artista != "") {
+    if (input$rec_artista != "Todos") {
       datos <- subset(datos, Artist == input$rec_artista)
     }
     
     #para filtrat por danceability, energy y valence
     datos <- subset(datos,
                     Danceability >= input$rec_danceability[1] & Danceability <= input$rec_danceability[2] &
-                      Energy >= input$rec_energy[1] & Energy <= input$rec_energy[2] &
-                      Valence >= input$rec_valence[1] & Valence <= input$rec_valence[2])
+                    Energy >= input$rec_energy[1] & Energy <= input$rec_energy[2] &
+                    Valence >= input$rec_valence[1] & Valence <= input$rec_valence[2])
     if (nrow(datos) == 0) {
       return(NULL)
     }
