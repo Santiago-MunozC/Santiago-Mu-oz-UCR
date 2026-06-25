@@ -101,6 +101,13 @@ server <- function(input, output, session){
           color = NA, 
           alpha = 0.4
         ) +
+        geom_boxplot(
+          width = 0.1,           
+          fill = "darkseagreen",        
+          color = "black",       
+          alpha = 0.8,          
+          outlier.shape = NA     
+        ) +
         geom_jitter(
           color = "black",          
           width = 0.15,               
