@@ -23,7 +23,7 @@ ui <- fluidPage(
     tabPanel("Recomendación Personalizada",
              sidebarLayout(
                sidebarPanel(
-                 selectInput("genero", "Seleccione un género musical:",
+                 selectInput("rec_genero", "Seleccione un género musical:",
                              choices = NULL),
                  selectInput("rec_artista", "Seleccione un artista (Opcional):",
                              choices = NULL),
@@ -49,11 +49,12 @@ ui <- fluidPage(
 #servidor
 server <- function(input, output, session){
   
+  #cargar los géneros
   observe({
     generos_disponibles <- unique(dataset$Genre)
     generos_disponibles <- generos_disponibles[!is.na(generos_disponibles)]
     
-    updateSelectInput(session, "genero",
+    updateSelectInput(session, "rec_genero",
                       choices = c("Todos", sort(generos_disponibles)))
   })
   
@@ -67,7 +68,7 @@ server <- function(input, output, session){
     }
     artistas_disponibles <- artistas_disponibles[!is.na(artistas_disponibles)]
     updateSelectInput(session, "rec_artist",
-                      choices = c("", sort(unique(artistas_disponibles))))
+                      choices = c("Todos los artistas" = "", sort(unique(artistas_disponibles))))
   })
   
   #para filtrar y seleccionar una canción aleatoria
@@ -76,7 +77,7 @@ server <- function(input, output, session){
     datos <- dataset
     
     #para filtrar por género
-    if (input$req_genero != "Todos") {
+    if (input$rec_genero != "Todos") {
       datos <- subset(datos, Genre == input$rec_genero)
     }
     
