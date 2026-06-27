@@ -9,6 +9,7 @@
 library(shiny)
 library(ggplot2)
 library(readxl)
+options(scipen = 999) #quita la notación científica en toda la aplicación
 
 #cargar dataset
 dataset <- read_excel("dataset.xlsx")
@@ -33,10 +34,7 @@ ui <- fluidPage(
                                "Cualitativas" = c("Tipo de Álbum" = "Album_type",
                                                   "Plataforma" = "most_playedon")
                              )
-                 ),
-                 
-                 selectInput("genero", "Seleccione un género musical:",
-                             choices = NULL)
+                 )
                ),
                
                mainPanel(
@@ -50,101 +48,101 @@ ui <- fluidPage(
   )
 )
 
-#servidor
 server <- function(input, output, session){
-  
-  observe({
-    generos_disponibles <- unique(dataset$Genre)
-    generos_disponibles <- generos_disponibles[!is.na(generos_disponibles)]
-    
-    updateSelectInput(session, "genero",
-                      choices = sort(generos_disponibles))
-  })
-  
-  #descripción de las variables
   descripcion_variable <- list(
-    Artist = "Corresponde al nombre del artista o grupo musical que interpreta la canción.", 
+    Artist = "Corresponde al nombre del artista o grupo musical que interpreta la canción.",
     Track = "Corresponde al nombre de la canción.",
     Album = "Corresponde al nombre del álbum al que pertenece la canción.",
     Album_type = "Corresponde al tipo de lanzamiento al que pertenece la canción, ya sea álbum, sencillo o una recopilación.",
-    Danceability = "Es la medida que indica qué tan adecuada es una canción para bailar según factores como el ritmo, la estabilidad del tempo y la fuerza del compás. Entre más cerca esté el valor de 1 más bailable es la canción.",
-    Energy = "Indica la intensidad y actividad percibida en una canción, donde los valores altos se relacionan con canciones rápidas y ruidosas.",
+    Danceability = "Es la medida que indica qué tan adecuada es una canción para bailar.",
+    Energy = "Indica la intensidad y actividad percibida en una canción.",
     Loudness = "Corresponde al nivel promedio del volumen de la canción medido en decibeles.",
-    Speechiness = "Corresponde a la proporción de contenido hablado que está presente en la canción. Entre más alto el valor, mayor la presencia de voz.",
-    Acousticness = "Corresponde a la medida de la probabilidad de la canción sea acústica. Toma valores entre 0 y 1 donde entre más cerca estén los valores de 1 más predominan los sonidos acústicos y los valores más cercanos a 0 se relacionan con mayor presencia de instrumentos o sonidos electrónicos.",
-    Instrumentalness = "Corresponde a la probabilidad de que en la canción predomine el instrumental y contenga pocas voces (o ninguna).",
-    Liveness = "Corresponde a la estimación de la interpretación en vivo dentro de una grabación. Entre más alto el valor, mayor la probabilidad de que la canción haya sido grabada en directo.",
-    Valence = "Corresponde a la medida del carácter emocional positivo de la canción. Los valores altos se asocian con canciones alegres, optimistas o energéticas.",
-    Tempo = "Corresponde al ritmo de la canción expresado en pulsaciones por minuto.",
+    Speechiness = "Corresponde a la proporción de contenido hablado presente en la canción.",
+    Acousticness = "Corresponde a la probabilidad de que la canción sea acústica.",
+    Instrumentalness = "Corresponde a la probabilidad de que la canción sea principalmente instrumental.",
+    Liveness = "Corresponde a la estimación de interpretación en vivo.",
+    Valence = "Corresponde al carácter emocional positivo de la canción.",
+    Tempo = "Corresponde al ritmo de la canción en pulsaciones por minuto.",
     Duration_min = "Corresponde a la duración de la canción en minutos.",
-    most_playedon = "Corresponde a la Plataforma en la que la canción registra la mayor cantidad de reproducciones.",
-    Genre = "Corresponde al género musical principal asociado a la canción."
+    most_playedon = "Corresponde a la plataforma donde la canción tiene más reproducciones.",
+    Genre = "Corresponde al género musical principal."
   )
-  
-  #filtrar por el género seleccionado
-  datos_filtrados <- reactive({
-    req(input$genero)
-    subset(dataset, Genre == input$genero)
-  })
   
   #gráfico
   output$hist_exploracion <- renderPlot({
-    datos <- datos_filtrados()
-    columna <- datos[[input$var_explorar]]
-    genero_actual <- input$genero
+    columna <- dataset[[input$var_explorar]]
     
     if (is.numeric(columna)) {
-      #gráfico de violín con puntos para variables numéricas
-      ggplot(datos, aes(x = "", y = .data[[input$var_explorar]])) +
-        geom_violin(
-          fill = "limegreen",             
-          color = NA, 
-          alpha = 0.4
-        ) +
-        geom_boxplot(
-          width = 0.1,           
-          fill = "darkseagreen",        
-          color = "black",       
-          alpha = 0.8,          
-          outlier.shape = NA     
-        ) +
-        geom_jitter(
-          color = "black",          
-          width = 0.15,               
-          alpha = 0.5,                  
-          size = 2                
-        ) +
-        coord_flip() +            
-        theme_minimal(base_size = 14) +
-        theme(
-          plot.title = element_text(face = "bold", size = 15, hjust = 0.5),
-          axis.title.y = element_blank(),
-          panel.grid.major.y = element_blank(),
-          panel.grid.minor = element_blank()
-        ) +
-        labs(
-          title = paste("Distribución de", input$var_explorar, "en", genero_actual),
-          y = paste(input$var_explorar, "(Cada punto es una canción)")
-        )
+      
+      #filtro para Instrumentalness
+      if (input$var_explorar == "Instrumentalness") {
+        datos_grafico <- subset(dataset, Instrumentalness <= 0.000025)
+        
+        #gráfico para Instrumentalness
+        p <- ggplot(datos_grafico, aes(x = Instrumentalness * 100000)) +
+          geom_histogram(
+            bins = 20,
+            fill = "limegreen",
+            color = "white",
+            alpha = 0.85
+          ) +
+          theme_minimal(base_size = 14) +
+          theme(
+            panel.grid.minor = element_blank(),
+            plot.title = element_text(face = "bold", hjust = 0.5),
+            plot.subtitle = element_text(face = "italic", hjust = 0.5),
+            axis.title = element_text(face = "bold")
+          ) +
+          labs(
+            title = "Distribución de Instrumentalness",
+            subtitle = "Nota: Se omiten valores extremos superiores a 0.000025 para mejorar la visualización",
+            x = "Instrumentalness (índice por cada 100 mil)",
+            y = "Cantidad de canciones"
+          )
+        
+      } else {
+        
+        #histograma para variables numéricas
+        p <- ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
+          geom_histogram(
+            bins = 20,
+            fill = "limegreen",
+            color = "white",
+            alpha = 0.85
+          ) +
+          theme_minimal(base_size = 14) +
+          theme(
+            panel.grid.minor = element_blank(),
+            plot.title = element_text(face = "bold", hjust = 0.5),
+            axis.title = element_text(face = "bold")
+          ) +
+          labs(
+            title = paste("Distribución de", input$var_explorar),
+            x = input$var_explorar,
+            y = "Cantidad de canciones"
+          )
+      }
+      p
       
     } else {
-      #gráfico de barras para variables cualitativas
-      ggplot(datos, aes(x = .data[[input$var_explorar]])) +
+      
+      #gráfico para variables cualitativas
+      ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
         geom_bar(
-          fill = "limegreen",             
+          fill = "limegreen",
           color = "white",
           alpha = 0.85,
           na.rm = TRUE
         ) +
-        coord_flip() +                 
+        coord_flip() +
         theme_minimal(base_size = 14) +
         theme(
           panel.grid.major.y = element_blank(),
-          plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+          plot.title = element_text(face = "bold", hjust = 0.5),
           axis.title = element_text(face = "bold")
         ) +
         labs(
-          title = paste("Frecuencia de", input$var_explorar, "en", genero_actual),
+          title = paste("Frecuencia de", input$var_explorar),
           x = input$var_explorar,
           y = "Cantidad de canciones"
         )
