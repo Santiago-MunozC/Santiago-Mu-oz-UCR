@@ -31,8 +31,13 @@ ui <- fluidPage(
                                                    "Probabilidad de ser instrumental" = "Instrumentalness",
                                                    "Duración en minutos" = "Duration_min",
                                                    "Probabilidad de ser una grabación en vivo" = "Liveness"),
+                                                   "Volumen promedio (dB)" = "Loudness",
+                                                   "Contenido hablado" = "Speechiness",
+                                                   "Probabilidad de ser acústica" = "Acousticness",
+                                                   "Ritmo (BPM)" = "Tempo",
                                "Cualitativas" = c("Tipo de Álbum" = "Album_type",
-                                                  "Plataforma" = "most_playedon")
+                                                  "Plataforma" = "most_playedon",
+                                                  "Género musical" = "Genre")
                              )
                  )
                ),
@@ -57,9 +62,6 @@ ui <- fluidPage(
 #descripción de cada variable
 server <- function(input, output, session){
   descripcion_variable <- list(
-    Artist = "Corresponde al nombre del artista o grupo musical que interpreta la canción.",
-    Track = "Corresponde al nombre de la canción.",
-    Album = "Corresponde al nombre del álbum al que pertenece la canción.",
     Album_type = "Corresponde al tipo de lanzamiento al que pertenece la canción, ya sea álbum, sencillo o una recopilación.",
     Danceability = "Es la medida que indica qué tan adecuada es una canción para bailar.",
     Energy = "Indica la intensidad y actividad percibida en una canción.",
@@ -83,8 +85,13 @@ server <- function(input, output, session){
     Instrumentalness = "Se concluye que la gran mayoría de canciones populares tienen un nivel de instrumentalidad cercano o igual a cero (el éxito en streaming está asociado a canciones con voz y letra).",
     Duration_min = "Se concluye que las canciones populares siguen un formato de duración estándar entre los 2.5 y 4.5 minutos (canciones más cortas para una mayor cantidad de reproducciones).",
     Liveness = "Se concluye que la mayoría de los artistas más populares publican grabaciones de estudio con una alta producción técnica.",
+    Loudness = "Se concluye que las canciones populares presentan niveles de volumen consistentemente altos (loudness war), donde los productores maximizan el volumen percibido para destacar en plataformas de streaming.",
+    Speechiness = "Se concluye que las canciones populares tienen un contenido hablado muy bajo, por lo que predominan las canciones que tienen una estructura musical tradicional (la melodía sigue siendo el elemento dominante por sobre la palabra).",
+    Acousticness = "Se concluye que las canciones populares tienen una baja probabilidad de ser acústicas, por lo que la producción electrónica y el uso de instrumentos procesados digitalmente dominan el mercado.",
+    Tempo = "Se concluye que las canciones populares presentan una distribución de tempo con dos zonas de concentración predominantes, lo que refleja la coexistencia de dos grandes corrientes en el mercado del streaming (canciones de ritmo moderado como el pop y canciones de ritmo más animado como el reggaetón).",
     Album_type = "Se concluye que los artistas más populares distribuyen su música a través de álbumes de estudio principalmente (singles representan una estrategia complementaria).",
-    most_playedon = "Se concluye que Spotify es la plataforma predominante donde las canciones de los artistas más populares acumulan más reproducciones (plataforma de música líder a nivel global)."
+    most_playedon = "Se concluye que Spotify es la plataforma predominante donde las canciones de los artistas más populares acumulan más reproducciones (plataforma de música líder a nivel global).",
+    Genre = "Se concluye que el Pop es el género dominante entre los artistas más populares, seguido de cerca por Rock, Reggaetón y Rap como géneros igualmente relevantes en el streaming. Los géneros minoritarios como K-pop, Electrónica, R&B y Alternative."
   )
   
   #interpretación
