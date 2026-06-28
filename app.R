@@ -6,6 +6,7 @@
 #
 #    https://shiny.posit.co/
 #
+
 library(shiny)
 library(ggplot2)
 library(readxl)
@@ -30,11 +31,11 @@ ui <- fluidPage(
                                                    "Cáracter emocional" = "Valence",
                                                    "Probabilidad de ser instrumental" = "Instrumentalness",
                                                    "Duración en minutos" = "Duration_min",
-                                                   "Probabilidad de ser una grabación en vivo" = "Liveness"),
+                                                   "Probabilidad de ser una grabación en vivo" = "Liveness",
                                                    "Volumen promedio (dB)" = "Loudness",
                                                    "Contenido hablado" = "Speechiness",
                                                    "Probabilidad de ser acústica" = "Acousticness",
-                                                   "Ritmo (BPM)" = "Tempo",
+                                                   "Ritmo (BPM)" = "Tempo"),
                                "Cualitativas" = c("Tipo de Álbum" = "Album_type",
                                                   "Plataforma" = "most_playedon",
                                                   "Género musical" = "Genre")
@@ -46,12 +47,20 @@ ui <- fluidPage(
                  h3("Estructura General"),
                  textOutput("estructura_general"), #tamaño del dataset
                  br(),
+                 h4("Vista previa de los datos (Primeras filas)"),
+                 div(style = "overflow-x: scroll;", tableOutput("vista_tabla")),
+                 br(),
+                 uiOutput("nota_instrumentalness"),
                  plotOutput("hist_exploracion"),
                  br(),
-                 h4("Interpretación"),
-                 uiOutput("interpretacion_variable"),
+                 uiOutput("seccion_frecuencias"),
+                 uiOutput("seccion_estadisticas"),
+                 br(),
                  h4("Descripción de la variable"),
-                 textOutput("descripcion_variable")
+                 textOutput("descripcion_variable"),
+                 br(),
+                 h4("Interpretación"),
+                 uiOutput("interpretacion_variable")
                )
              )
     )
@@ -59,8 +68,9 @@ ui <- fluidPage(
 )
 
 #servidor
-#descripción de cada variable
 server <- function(input, output, session){
+  
+  #breve descripción de las variables
   descripcion_variable <- list(
     Album_type = "Corresponde al tipo de lanzamiento al que pertenece la canción, ya sea álbum, sencillo o una recopilación.",
     Danceability = "Es la medida que indica qué tan adecuada es una canción para bailar.",
@@ -74,7 +84,7 @@ server <- function(input, output, session){
     Tempo = "Corresponde al ritmo de la canción en pulsaciones por minuto.",
     Duration_min = "Corresponde a la duración de la canción en minutos.",
     most_playedon = "Corresponde a la plataforma donde la canción tiene más reproducciones.",
-    Genre = "Corresponde al género musical principal."
+    Genre = "Corresponde al género musical principal asociado a cada canción."
   )
   
   #interpretación de los gráficos obtenidos
@@ -99,114 +109,185 @@ server <- function(input, output, session){
     texto <- interpretacion_variable[[input$var_explorar]]
     HTML(paste("<p style='text-align: justify;'>", texto, "</p>"))
   })
-
-#breve descripción del dataset
-output$estructura_general <- renderText({
-  paste("El conjunto de datos a analizar contiene un total de", nrow(dataset), 
-        "canciones correspondientes a los artistas más populares (10 canciones por artista).")
-})
-
-#gráfico
-output$hist_exploracion <- renderPlot({
-  columna <- dataset[[input$var_explorar]]
   
-  if (is.numeric(columna)) {
-    
-    #filtro para Instrumentalness
+  #breve descripción del dataset
+  output$estructura_general <- renderText({
+    paste("El conjunto de datos a analizar contiene un total de", nrow(dataset), 
+          "canciones correspondientes a los artistas más populares (10 canciones por artista).")
+  })
+  
+  #tabla con las primeras 5 filas del dataset
+  output$vista_tabla <- renderTable({
+    head(dataset, n = 5)
+  }, striped = TRUE, hover = TRUE, bordered = TRUE)
+  
+  #nota cuando se selecciona Instrumentalness
+  output$nota_instrumentalness <- renderUI({
     if (input$var_explorar == "Instrumentalness") {
-      datos_grafico <- subset(dataset, Instrumentalness <= 0.000025)
-      
-      #estadísticas descriptivas para Instrumentalness
-      media_val <- mean(datos_grafico$Instrumentalness * 100000, na.rm = TRUE)
-      mediana_val <- median(datos_grafico$Instrumentalness * 100000, na.rm = TRUE)
-      
-      #gráfico para Instrumentalness
-      p <- ggplot(datos_grafico, aes(x = Instrumentalness * 100000)) +
-        geom_histogram(
-          bins = 20,
-          fill = "limegreen",
-          color = "white",
-          alpha = 0.85
-        ) +
-        geom_vline(aes(xintercept = media_val, color = "Media"), linewidth = 1.2, linetype = "dashed") +
-        geom_vline(aes(xintercept = mediana_val, color = "Mediana"), linewidth = 1.2, linetype = "dotdash") +
-        scale_color_manual(name = "Métricas descriptivas", values = c("Media" = "darkred", "Mediana" = "darkblue")) +
-        theme_minimal(base_size = 14) +
-        theme(
-          panel.grid.minor = element_blank(),
-          plot.title = element_text(face = "bold", hjust = 0.5),
-          plot.subtitle = element_text(face = "italic", hjust = 0.5),
-          axis.title = element_text(face = "bold"),
-          legend.position = "top"
-        ) +
-        labs(
-          title = "Distribución de Instrumentalness",
-          subtitle = "Nota: Se omiten valores extremos superiores a 0.000025 para mejorar la visualización",
-          x = "Instrumentalness (índice por cada 100 mil)",
-          y = "Cantidad de canciones"
-        )
+      wellPanel(
+        style = "background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px;",
+        HTML("<b> Nota sobre la visualización:</b> Dado que la variable <i>Instrumentalness</i> presenta una fuerte concentración de valores cercanos a cero con algunos valores extremos aislados, el gráfico excluye observaciones superiores a 0.000025 para mejorar la legibilidad. El eje horizontal se expresa en índice por cada 100 mil unidades.")
+      )
       
     } else {
       
-      #estadísticas descriptivas para el resto de variables cuantitativas
-      media_val <- mean(columna, na.rm = TRUE)
-      mediana_val <- median(columna, na.rm = TRUE)
+      NULL
+    }
+  })
+  
+  #tabla de frecuencias y porcentajes para variables cualitativas
+  output$seccion_frecuencias <- renderUI({
+    columna <- dataset[[input$var_explorar]]
+    
+    if (!is.numeric(columna)) {
+      freq_tabla <- as.data.frame(table(columna))
+      colnames(freq_tabla) <- c("Categoría", "Frecuencia")
+      freq_tabla$Porcentaje <- paste0(round(freq_tabla$Frecuencia / sum(freq_tabla$Frecuencia) * 100, 1), "%")
+      freq_tabla <- freq_tabla[order(-freq_tabla$Frecuencia), ]
       
-      #histograma para variables numéricas
-      p <- ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
-        geom_histogram(
-          bins = 20,
+      tagList(
+        h4("Distribución de frecuencias"),
+        renderTable(freq_tabla, striped = TRUE, hover = TRUE, bordered = TRUE)
+      )
+      
+    } else {
+      
+      NULL
+    }
+  })
+  
+  #estadísticas descriptivas de las variables numéricas
+  output$seccion_estadisticas <- renderUI({
+    columna <- dataset[[input$var_explorar]]
+    
+    if (is.numeric(columna)) {
+      
+      #Instrumentalness
+      if (input$var_explorar == "Instrumentalness") {
+        sub_datos <- subset(dataset, Instrumentalness <= 0.000025)$Instrumentalness
+        media   <- round(mean(sub_datos, na.rm = TRUE), 6)
+        mediana <- round(median(sub_datos, na.rm = TRUE), 6)
+        desv    <- round(sd(sub_datos, na.rm = TRUE), 6)
+        
+      } else {
+        
+        media   <- round(mean(columna, na.rm = TRUE), 2)
+        mediana <- round(median(columna, na.rm = TRUE), 2)
+        desv    <- round(sd(columna, na.rm = TRUE), 2)
+      }
+      
+      tagList(
+        h4("Métricas Descriptivas"),
+        HTML(paste0("<ul>",
+                    "<li><b>Promedio (Media):</b> ", media, "</li>",
+                    "<li><b>Mediana:</b> ", mediana, "</li>",
+                    "<li><b>Desviación Estándar:</b> ", desv, "</li>",
+                    "</ul>"))
+      )
+      
+    } else {
+      
+      NULL #variables cualitativas
+    }
+  })  
+  
+  #gráfico
+  output$hist_exploracion <- renderPlot({
+    columna <- dataset[[input$var_explorar]]
+    
+    if (is.numeric(columna)) {
+      
+      #filtro para Instrumentalness
+      if (input$var_explorar == "Instrumentalness") {
+        datos_grafico <- subset(dataset, Instrumentalness <= 0.000025)
+        
+        #estadísticas descriptivas para Instrumentalness
+        media_val <- mean(datos_grafico$Instrumentalness * 100000, na.rm = TRUE)
+        mediana_val <- median(datos_grafico$Instrumentalness * 100000, na.rm = TRUE)
+        
+        #gráfico para Instrumentalness
+        p <- ggplot(datos_grafico, aes(x = Instrumentalness * 100000)) +
+          geom_histogram(
+            bins = 20,
+            fill = "limegreen",
+            color = "white",
+            alpha = 0.85
+          ) +
+          geom_vline(aes(xintercept = media_val, color = "Media"), linewidth = 1.2, linetype = "dashed") +
+          geom_vline(aes(xintercept = mediana_val, color = "Mediana"), linewidth = 1.2, linetype = "dotdash") +
+          scale_color_manual(name = "Métricas descriptivas", values = c("Media" = "darkred", "Mediana" = "darkblue")) +
+          theme_minimal(base_size = 14) +
+          theme(
+            panel.grid.minor = element_blank(),
+            plot.title = element_text(face = "bold", hjust = 0.5),
+            axis.title = element_text(face = "bold"),
+            legend.position = "top"
+          ) +
+          labs(
+            title = "Distribución de Instrumentalness",
+            x = "Instrumentalness (índice por cada 100 mil)",
+            y = "Cantidad de canciones"
+          )
+        
+      } else {
+        #estadísticas descriptivas para el resto de variables cuantitativas
+        media_val <- mean(columna, na.rm = TRUE)
+        mediana_val <- median(columna, na.rm = TRUE)
+        
+        #histograma para variables numéricas
+        p <- ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
+          geom_histogram(
+            bins = 20,
+            fill = "limegreen",
+            color = "white",
+            alpha = 0.85
+          ) +
+          geom_vline(aes(xintercept = media_val, color = "Media"), linewidth = 1.2, linetype = "dashed") +
+          geom_vline(aes(xintercept = mediana_val, color = "Mediana"), linewidth = 1.2, linetype = "dotdash") +
+          scale_color_manual(name = "Métricas Descriptivas", values = c("Media" = "darkred", "Mediana" = "darkblue")) +
+          theme_minimal(base_size = 14) +
+          theme(
+            panel.grid.minor = element_blank(),
+            plot.title = element_text(face = "bold", hjust = 0.5),
+            axis.title = element_text(face = "bold"),
+            legend.position = "top"
+          ) +
+          labs(
+            title = paste("Distribución de", input$var_explorar),
+            x = input$var_explorar,
+            y = "Cantidad de canciones"
+          )
+      }
+      p
+      
+    } else {
+      #gráfico para variables cualitativas
+      ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
+        geom_bar(
           fill = "limegreen",
           color = "white",
-          alpha = 0.85
+          alpha = 0.85,
+          na.rm = TRUE
         ) +
-        geom_vline(aes(xintercept = media_val, color = "Media"), linewidth = 1.2, linetype = "dashed") +
-        geom_vline(aes(xintercept = mediana_val, color = "Mediana"), linewidth = 1.2, linetype = "dotdash") +
-        scale_color_manual(name = "Métricas Descriptivas", values = c("Media" = "darkred", "Mediana" = "darkblue")) +
+        coord_flip() +
         theme_minimal(base_size = 14) +
         theme(
-          panel.grid.minor = element_blank(),
+          panel.grid.major.y = element_blank(),
           plot.title = element_text(face = "bold", hjust = 0.5),
-          axis.title = element_text(face = "bold"),
-          legend.position = "top"
+          axis.title = element_text(face = "bold")
         ) +
         labs(
-          title = paste("Distribución de", input$var_explorar),
-          x = input$var_explorar,
+          title = paste("Frecuencia de", input$var_explorar),
+          x = NULL,
           y = "Cantidad de canciones"
         )
     }
-    p
-    
-  } else {
-    
-    #gráfico para variables cualitativas
-    ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
-      geom_bar(
-        fill = "limegreen",
-        color = "white",
-        alpha = 0.85,
-        na.rm = TRUE
-      ) +
-      coord_flip() +
-      theme_minimal(base_size = 14) +
-      theme(
-        panel.grid.major.y = element_blank(),
-        plot.title = element_text(face = "bold", hjust = 0.5),
-        axis.title = element_text(face = "bold")
-      ) +
-      labs(
-        title = paste("Frecuencia de", input$var_explorar),
-        x = input$var_explorar,
-        y = "Cantidad de canciones"
-      )
-  }
-})
-
-#añadir la descripción de las variables
-output$descripcion_variable <- renderText({
-  descripcion_variable[[input$var_explorar]]
-})
+  })
+  
+  #añadir la descripción de las variables
+  output$descripcion_variable <- renderText({
+    descripcion_variable[[input$var_explorar]]
+  })
 }
 
 #ejecutar la aplicación
