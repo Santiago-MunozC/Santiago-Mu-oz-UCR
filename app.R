@@ -43,6 +43,8 @@ ui <- fluidPage(
                  br(),
                  plotOutput("hist_exploracion"),
                  br(),
+                 h4("Interpretación"),
+                 uiOutput("interpretacion_variable"),
                  h4("Descripción de la variable"),
                  textOutput("descripcion_variable")
                )
@@ -72,98 +74,116 @@ server <- function(input, output, session){
     most_playedon = "Corresponde a la plataforma donde la canción tiene más reproducciones.",
     Genre = "Corresponde al género musical principal."
   )
-
-  #breve descripción del dataset
-  output$estructura_general <- renderText({
-    paste("El conjunto de datos a analizar contiene un total de", nrow(dataset), 
-          "canciones correspondientes a los artistas más populares (10 canciones por artista).")
-  })
   
-  #gráfico
-  output$hist_exploracion <- renderPlot({
-    columna <- dataset[[input$var_explorar]]
+  #interpretación de los gráficos obtenidos
+  interpretacion_variable <- list(
+    Danceability = "Se concluye que los artistas más populares tienden a producir canciones con alta bailabilidad (factor asociado al éxito de streaming).",
+    Energy = "Se concluye que las canciones populares tienen tendencia hacia los altos niveles de energía (asociado a géneros dominantes en streaming como el pop y el reggaetón).",
+    Valence = "Se concluye que las canciones populares presentan una distribución equilibrada del carácter emocional, sin una tendencia hacia la positividad o negatividad.",
+    Instrumentalness = "Se concluye que la gran mayoría de canciones populares tienen un nivel de instrumentalidad cercano o igual a cero (el éxito en streaming está asociado a canciones con voz y letra).",
+    Duration_min = "Se concluye que las canciones populares siguen un formato de duración estándar entre los 2.5 y 4.5 minutos (canciones más cortas para una mayor cantidad de reproducciones).",
+    Liveness = "Se concluye que la mayoría de los artistas más populares publican grabaciones de estudio con una alta producción técnica.",
+    Album_type = "Se concluye que los artistas más populares distribuyen su música a través de álbumes de estudio principalmente (singles representan una estrategia complementaria).",
+    most_playedon = "Se concluye que Spotify es la plataforma predominante donde las canciones de los artistas más populares acumulan más reproducciones (plataforma de música líder a nivel global)."
+  )
+  
+  #interpretación
+  output$interpretacion_variable <- renderUI({
+    texto <- interpretacion_variable[[input$var_explorar]]
+    HTML(paste("<p style='text-align: justify;'>", texto, "</p>"))
+  })
+
+#breve descripción del dataset
+output$estructura_general <- renderText({
+  paste("El conjunto de datos a analizar contiene un total de", nrow(dataset), 
+        "canciones correspondientes a los artistas más populares (10 canciones por artista).")
+})
+
+#gráfico
+output$hist_exploracion <- renderPlot({
+  columna <- dataset[[input$var_explorar]]
+  
+  if (is.numeric(columna)) {
     
-    if (is.numeric(columna)) {
+    #filtro para Instrumentalness
+    if (input$var_explorar == "Instrumentalness") {
+      datos_grafico <- subset(dataset, Instrumentalness <= 0.000025)
       
-      #filtro para Instrumentalness
-      if (input$var_explorar == "Instrumentalness") {
-        datos_grafico <- subset(dataset, Instrumentalness <= 0.000025)
-        
-        #gráfico para Instrumentalness
-        p <- ggplot(datos_grafico, aes(x = Instrumentalness * 100000)) +
-          geom_histogram(
-            bins = 20,
-            fill = "limegreen",
-            color = "white",
-            alpha = 0.85
-          ) +
-          theme_minimal(base_size = 14) +
-          theme(
-            panel.grid.minor = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            plot.subtitle = element_text(face = "italic", hjust = 0.5),
-            axis.title = element_text(face = "bold")
-          ) +
-          labs(
-            title = "Distribución de Instrumentalness",
-            subtitle = "Nota: Se omiten valores extremos superiores a 0.000025 para mejorar la visualización",
-            x = "Instrumentalness (índice por cada 100 mil)",
-            y = "Cantidad de canciones"
-          )
-        
-      } else {
-        
-        #histograma para variables numéricas
-        p <- ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
-          geom_histogram(
-            bins = 20,
-            fill = "limegreen",
-            color = "white",
-            alpha = 0.85
-          ) +
-          theme_minimal(base_size = 14) +
-          theme(
-            panel.grid.minor = element_blank(),
-            plot.title = element_text(face = "bold", hjust = 0.5),
-            axis.title = element_text(face = "bold")
-          ) +
-          labs(
-            title = paste("Distribución de", input$var_explorar),
-            x = input$var_explorar,
-            y = "Cantidad de canciones"
-          )
-      }
-      p
+      #gráfico para Instrumentalness
+      p <- ggplot(datos_grafico, aes(x = Instrumentalness * 100000)) +
+        geom_histogram(
+          bins = 20,
+          fill = "limegreen",
+          color = "white",
+          alpha = 0.85
+        ) +
+        theme_minimal(base_size = 14) +
+        theme(
+          panel.grid.minor = element_blank(),
+          plot.title = element_text(face = "bold", hjust = 0.5),
+          plot.subtitle = element_text(face = "italic", hjust = 0.5),
+          axis.title = element_text(face = "bold")
+        ) +
+        labs(
+          title = "Distribución de Instrumentalness",
+          subtitle = "Nota: Se omiten valores extremos superiores a 0.000025 para mejorar la visualización",
+          x = "Instrumentalness (índice por cada 100 mil)",
+          y = "Cantidad de canciones"
+        )
       
     } else {
       
-      #gráfico para variables cualitativas
-      ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
-        geom_bar(
+      #histograma para variables numéricas
+      p <- ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
+        geom_histogram(
+          bins = 20,
           fill = "limegreen",
           color = "white",
-          alpha = 0.85,
-          na.rm = TRUE
+          alpha = 0.85
         ) +
-        coord_flip() +
         theme_minimal(base_size = 14) +
         theme(
-          panel.grid.major.y = element_blank(),
+          panel.grid.minor = element_blank(),
           plot.title = element_text(face = "bold", hjust = 0.5),
           axis.title = element_text(face = "bold")
         ) +
         labs(
-          title = paste("Frecuencia de", input$var_explorar),
+          title = paste("Distribución de", input$var_explorar),
           x = input$var_explorar,
           y = "Cantidad de canciones"
         )
     }
-  })
-  
-  #añadir la descripción de las variables
-  output$descripcion_variable <- renderText({
-    descripcion_variable[[input$var_explorar]]
-  })
+    p
+    
+  } else {
+    
+    #gráfico para variables cualitativas
+    ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
+      geom_bar(
+        fill = "limegreen",
+        color = "white",
+        alpha = 0.85,
+        na.rm = TRUE
+      ) +
+      coord_flip() +
+      theme_minimal(base_size = 14) +
+      theme(
+        panel.grid.major.y = element_blank(),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold")
+      ) +
+      labs(
+        title = paste("Frecuencia de", input$var_explorar),
+        x = input$var_explorar,
+        y = "Cantidad de canciones"
+      )
+  }
+})
+
+#añadir la descripción de las variables
+output$descripcion_variable <- renderText({
+  descripcion_variable[[input$var_explorar]]
+})
 }
 
 #ejecutar la aplicación
