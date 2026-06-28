@@ -25,12 +25,12 @@ ui <- fluidPage(
                sidebarPanel(
                  selectInput("var_explorar", "Seleccione una variable para visualizar:",
                              choices = list(
-                               "Cuantitativas" = c("Danceability" = "Danceability",
-                                                   "Energy" = "Energy",
-                                                   "Valence" = "Valence",
-                                                   "Instrumentalness" = "Instrumentalness",
-                                                   "Duration_min" = "Duration_min",
-                                                   "Liveness" = "Liveness"),
+                               "Cuantitativas" = c("Bailabilidad" = "Danceability",
+                                                   "Energía" = "Energy",
+                                                   "Cáracter emocional" = "Valence",
+                                                   "Probabilidad de ser instrumental" = "Instrumentalness",
+                                                   "Duración en minutos" = "Duration_min",
+                                                   "Probabilidad de ser una grabación en vivo" = "Liveness"),
                                "Cualitativas" = c("Tipo de Álbum" = "Album_type",
                                                   "Plataforma" = "most_playedon")
                              )
@@ -109,6 +109,10 @@ output$hist_exploracion <- renderPlot({
     if (input$var_explorar == "Instrumentalness") {
       datos_grafico <- subset(dataset, Instrumentalness <= 0.000025)
       
+      #estadísticas descriptivas para Instrumentalness
+      media_val <- mean(datos_grafico$Instrumentalness * 100000, na.rm = TRUE)
+      mediana_val <- median(datos_grafico$Instrumentalness * 100000, na.rm = TRUE)
+      
       #gráfico para Instrumentalness
       p <- ggplot(datos_grafico, aes(x = Instrumentalness * 100000)) +
         geom_histogram(
@@ -117,12 +121,16 @@ output$hist_exploracion <- renderPlot({
           color = "white",
           alpha = 0.85
         ) +
+        geom_vline(aes(xintercept = media_val, color = "Media"), linewidth = 1.2, linetype = "dashed") +
+        geom_vline(aes(xintercept = mediana_val, color = "Mediana"), linewidth = 1.2, linetype = "dotdash") +
+        scale_color_manual(name = "Métricas descriptivas", values = c("Media" = "darkred", "Mediana" = "darkblue")) +
         theme_minimal(base_size = 14) +
         theme(
           panel.grid.minor = element_blank(),
           plot.title = element_text(face = "bold", hjust = 0.5),
           plot.subtitle = element_text(face = "italic", hjust = 0.5),
-          axis.title = element_text(face = "bold")
+          axis.title = element_text(face = "bold"),
+          legend.position = "top"
         ) +
         labs(
           title = "Distribución de Instrumentalness",
@@ -133,6 +141,10 @@ output$hist_exploracion <- renderPlot({
       
     } else {
       
+      #estadísticas descriptivas para el resto de variables cuantitativas
+      media_val <- mean(columna, na.rm = TRUE)
+      mediana_val <- median(columna, na.rm = TRUE)
+      
       #histograma para variables numéricas
       p <- ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
         geom_histogram(
@@ -141,11 +153,15 @@ output$hist_exploracion <- renderPlot({
           color = "white",
           alpha = 0.85
         ) +
+        geom_vline(aes(xintercept = media_val, color = "Media"), linewidth = 1.2, linetype = "dashed") +
+        geom_vline(aes(xintercept = mediana_val, color = "Mediana"), linewidth = 1.2, linetype = "dotdash") +
+        scale_color_manual(name = "Métricas Descriptivas", values = c("Media" = "darkred", "Mediana" = "darkblue")) +
         theme_minimal(base_size = 14) +
         theme(
           panel.grid.minor = element_blank(),
           plot.title = element_text(face = "bold", hjust = 0.5),
-          axis.title = element_text(face = "bold")
+          axis.title = element_text(face = "bold"),
+          legend.position = "top"
         ) +
         labs(
           title = paste("Distribución de", input$var_explorar),
