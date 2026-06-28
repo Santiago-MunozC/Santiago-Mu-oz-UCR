@@ -164,10 +164,10 @@ server <- function(input, output, session){
       
       #Instrumentalness
       if (input$var_explorar == "Instrumentalness") {
-        sub_datos <- subset(dataset, Instrumentalness <= 0.000025)$Instrumentalness
-        media   <- round(mean(sub_datos, na.rm = TRUE), 6)
-        mediana <- round(median(sub_datos, na.rm = TRUE), 6)
-        desv    <- round(sd(sub_datos, na.rm = TRUE), 6)
+        todos   <- dataset$Instrumentalness * 100000
+        media   <- round(mean(todos, na.rm = TRUE), 4)
+        mediana <- round(median(todos, na.rm = TRUE), 4)
+        desv    <- round(sd(todos, na.rm = TRUE), 4)
         
       } else {
         
@@ -177,7 +177,7 @@ server <- function(input, output, session){
       }
       
       tagList(
-        h4("Métricas Descriptivas"),
+        h4("Métricas descriptivas"),
         HTML(paste0("<ul>",
                     "<li><b>Promedio (Media):</b> ", media, "</li>",
                     "<li><b>Mediana:</b> ", mediana, "</li>",
