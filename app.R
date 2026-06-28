@@ -38,6 +38,9 @@ ui <- fluidPage(
                ),
                
                mainPanel(
+                 h3("Estructura General"),
+                 textOutput("estructura_general"), #tamaño del dataset
+                 br(),
                  plotOutput("hist_exploracion"),
                  br(),
                  h4("Descripción de la variable"),
@@ -48,6 +51,8 @@ ui <- fluidPage(
   )
 )
 
+#servidor
+#descripción de cada variable
 server <- function(input, output, session){
   descripcion_variable <- list(
     Artist = "Corresponde al nombre del artista o grupo musical que interpreta la canción.",
@@ -67,6 +72,12 @@ server <- function(input, output, session){
     most_playedon = "Corresponde a la plataforma donde la canción tiene más reproducciones.",
     Genre = "Corresponde al género musical principal."
   )
+
+  #breve descripción del dataset
+  output$estructura_general <- renderText({
+    paste("El conjunto de datos a analizar contiene un total de", nrow(dataset), 
+          "canciones correspondientes a los artistas más populares (10 canciones por artista).")
+  })
   
   #gráfico
   output$hist_exploracion <- renderPlot({
