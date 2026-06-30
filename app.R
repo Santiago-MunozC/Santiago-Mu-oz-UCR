@@ -10,7 +10,7 @@
 library(shiny)
 library(ggplot2)
 library(readxl)
-options(scipen = 999) #quita la notación científica en toda la aplicación
+options(scipen = 999) #quita la notación científica
 
 #cargar dataset
 dataset <- read_excel("dataset.xlsx")
