@@ -554,7 +554,7 @@ server <- function(input, output, session){
       scale_x_continuous(limits = c(0,1), expand = c(0,0))+
       scale_y_continuous(limits = c(0,1), expand = c(0,0))+
       scale_fill_manual(
-        values = colorRampPalette(c("#111111", "#052e16", "#15803d", "#22c55e", "#4ade80", "#22ff00"))(14)
+        values = colorRampPalette(c("white", "#15803d", "#22c55e", "#4ade80", "#22ff00"))(12)
       ) +
       labs(title = paste("Concentración de canciones para el género:", input$filtro_genero), 
            subtitle = "Las zonas encendidas muestran la mayor concentración de canciones",
