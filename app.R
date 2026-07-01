@@ -610,7 +610,7 @@ server <- function(input, output, session){
         Canción = Track, 
         Artista = Artist, 
         Bailabilidad = Danceability, 
-        Polaridad Emocional = Valence
+        "Polaridad Emocional" = Valence
       )
     
     return(top_datos)
