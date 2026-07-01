@@ -33,126 +33,152 @@ ui <- navbarPage(
   
   #pestaña1
   tabPanel("Exploración Inicial",
-           titlePanel("Music Explorer: Análisis interactivo de canciones y artistas"),
-           sidebarLayout(
-             sidebarPanel(
-               selectInput("var_explorar", "Seleccione una variable para visualizar:",
-                           choices = list(
-                             "Cuantitativas" = c("Danceability" = "Danceability",
-                                                 "Energy" = "Energy",
-                                                 "Valence" = "Valence",
-                                                 "Instrumentalness" = "Instrumentalness",
-                                                 "Duration_min" = "Duration_min",
-                                                 "Liveness" = "Liveness",
-                                                 "Loudness" = "Loudness",
-                                                 "Speechiness" = "Speechiness",
-                                                 "Acousticness" = "Acousticness",
-                                                 "Tempo" = "Tempo"),
-                             "Cualitativas" = c("Album_type" = "Album_type",
-                                                "most_playedon" = "most_playedon",
-                                                "Genre" = "Genre")
-                           )
-               )
-             ),
-             
-             mainPanel(
-               h3("Estructura General"),
-               textOutput("estructura_general"), #tamaño del dataset
-               br(),
-               h4("Vista previa de los datos (Primeras filas)"),
-               div(style = "overflow-x: scroll;", tableOutput("vista_tabla")),
-               br(),
-               uiOutput("nota_instrumentalness"),
-               plotOutput("hist_exploracion"),
-               br(),
-               uiOutput("seccion_frecuencias"),
-               uiOutput("seccion_estadisticas"),
-               br(),
-               h4("Descripción de la variable"),
-               textOutput("descripcion_variable"),
-               br(),
-               h4("Interpretación"),
-               uiOutput("interpretacion_variable")
-             )
-           )
+    titlePanel("Music Explorer: Análisis interactivo de canciones y artistas"),
+    sidebarLayout(
+      sidebarPanel(
+        selectInput("var_explorar", "Seleccione una variable para visualizar:",
+                    choices = list(
+                      "Cuantitativas" = c("Danceability" = "Danceability",
+                                          "Energy" = "Energy",
+                                          "Valence" = "Valence",
+                                          "Instrumentalness" = "Instrumentalness",
+                                          "Duration_min" = "Duration_min",
+                                          "Liveness" = "Liveness",
+                                          "Loudness" = "Loudness",
+                                          "Speechiness" = "Speechiness",
+                                          "Acousticness" = "Acousticness",
+                                          "Tempo" = "Tempo"),
+                      "Cualitativas" = c("Album_type" = "Album_type",
+                                         "most_playedon" = "most_playedon",
+                                         "Genre" = "Genre")
+                    )
+        )
+      ),
+      
+      mainPanel(
+        h3("Estructura General"),
+        textOutput("estructura_general"), #tamaño del dataset
+        br(),
+        h4("Vista previa de los datos (Primeras filas)"),
+        div(style = "overflow-x: scroll;", tableOutput("vista_tabla")),
+        br(),
+        uiOutput("nota_instrumentalness"),
+        plotOutput("hist_exploracion"),
+        br(),
+        uiOutput("seccion_frecuencias"),
+        uiOutput("seccion_estadisticas"),
+        br(),
+        h4("Descripción de la variable"),
+        textOutput("descripcion_variable"),
+        br(),
+        h4("Interpretación"),
+        uiOutput("interpretacion_variable")
+      )
+    )
   ),
   
   #pestaña2
   tabPanel("Comparación por Género",
-           titlePanel("¿Cómo varían las características musicales entre los géneros?"),
-           sidebarLayout(
-             sidebarPanel(
-               h4("Filtros de Análisis"),
-               selectizeInput("gen_filter", "1. Selecciona Género(s):", 
-                              choices = sort(unique(dataset$Genre)), multiple = TRUE),
-               
-               selectInput("variable", "3. Característica musical:", 
-                           choices = c("Danceability", "Energy", "Loudness", "Speechiness", 
-                                       "Acousticness", "Instrumentalness", "Liveness", "Valence", "Tempo"))
-             ),
-             mainPanel(
-               fluidRow(
-                 column(6, plotOutput("box_genero", height = "400px")),
-                 column(6, plotOutput("barra_genero", height = "400px"))
-               ),
-               hr(),
-               h3("Resumen estadístico"),
-               tableOutput("tabla_genero")
-             )
-           )
+    titlePanel("¿Cómo varían las características musicales entre los géneros?"),
+    sidebarLayout(
+      sidebarPanel(
+        h4("Filtros de Análisis"),
+        selectizeInput("gen_filter", "1. Selecciona Género(s):", 
+                       choices = sort(unique(dataset$Genre)), multiple = TRUE),
+        
+        selectInput("variable", "3. Característica musical:", 
+                    choices = c("Danceability", "Energy", "Loudness", "Speechiness", 
+                                "Acousticness", "Instrumentalness", "Liveness", "Valence", "Tempo"))
+      ),
+      mainPanel(
+        fluidRow(
+          column(6, plotOutput("box_genero", height = "400px")),
+          column(6, plotOutput("barra_genero", height = "400px"))
+        ),
+        hr(),
+        h3("Resumen estadístico"),
+        tableOutput("tabla_genero")
+      )
+    )
   ),
   
   #pestaña3
   tabPanel("Energy vs Loudness",
-           titlePanel("Relación entre Energy y Loudness"),
-           sidebarLayout(
-             sidebarPanel(
-               selectInput("genero", #escoger entre categorías
-                           "Seleccione un género:",
-                           choices = unique(dataset$Genre))
-             ),
-             
-             #gráfico de distribución
-             mainPanel(
-               plotOutput("grafico"),
-               br(),
-               textOutput("cantidad"),
-               br(),
-               textOutput("correlacion"),
-               br(),
-               textOutput("interpretacion")
-             )
-           )),
+    titlePanel("Relación entre Energy y Loudness"),
+    sidebarLayout(
+      sidebarPanel(
+        selectInput("genero", #escoger entre categorías
+                    "Seleccione un género:",
+                    choices = unique(dataset$Genre))
+      ),
+      
+      #gráfico de distribución
+      mainPanel(
+        plotOutput("grafico"),
+        br(),
+        textOutput("cantidad"),
+        br(),
+        textOutput("correlacion"),
+        br(),
+        textOutput("interpretacion")
+      )
+    )
+  ),
   
   #pestaña4
   tabPanel("Bailabilidad y Polaridad emocional",
-           titlePanel("Pestaña 4"),
-           sidebarLayout(
-             sidebarPanel(
-               #Menú de géneros
-               selectInput("filtro_genero", 
-                           "Seleccione un Género Musical:", 
-                           choices = unique(dataset$Genre))
-             ),
-             mainPanel(
-               plotOutput("grafico_densidad"),
-               
-               hr(),
-               
-               h4("Interpretación del Patrón"),
-               textOutput("texto_interpretacion"),
-               
-               hr(),
-               
-               h4("Top 3 Canciones con Mayor Bailabilidad y Polaridad emocional"),
-               tableOutput("tabla_top_canciones")
-             )
-           )
-  ))
+    titlePanel("Pestaña 4"),
+    sidebarLayout(
+      sidebarPanel(
+        #Menú de géneros
+        selectInput("filtro_genero", 
+                    "Seleccione un Género Musical:", 
+                    choices = unique(dataset$Genre))
+      ),
+      mainPanel(
+        plotOutput("grafico_densidad"),
+        
+        hr(),
+        
+        h4("Interpretación del Patrón"),
+        textOutput("texto_interpretacion"),
+        
+        hr(),
+        
+        h4("Top 3 Canciones con Mayor Bailabilidad y Polaridad emocional"),
+        tableOutput("tabla_top_canciones")
+      )
+    )
+  ),
+  
+  #pestaña5
+  tabPanel("Recomendación Personalizada",
+    titlePanel("Music Explorer: Análisis interactivo de canciones y artistas"),
+    sidebarLayout(
+      sidebarPanel(
+        selectInput("rec_genero", "Seleccione un género musical:",
+                    choices = NULL),
+        selectInput("rec_artista", "Seleccione un artista (Opcional):",
+                    choices = NULL),
+        sliderInput("rec_danceability", "Bailabilidad (Danceability):",
+                    min = 0, max = 1, value = c(0, 1), step = 0.05),
+        sliderInput("rec_energy", "Energía (Energy):",
+                    min = 0, max = 1, value = c(0, 1), step = 0.05),
+        sliderInput("rec_valence", "Polaridad emocional (Valence):",
+                    min = 0, max = 1, value = c(0, 1), step = 0.05),
+        actionButton("btn_recomendar", "Obtener recomendación")
+      ),
+      mainPanel(
+        h4("Canción recomendada"),
+        uiOutput("resultado_recomendacion")
+      )
+    )
+  )
+)
 
 #servidor
 server <- function(input, output, session){
-  
+
   #pestaña1  
   #breve descripción de las variables
   descripcion_variable <- list(
@@ -344,7 +370,6 @@ server <- function(input, output, session){
       p
       
     } else {
-      
       #gráfico para variables cualitativas
       ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
         geom_bar(
@@ -437,7 +462,8 @@ server <- function(input, output, session){
   striped = TRUE,    
   bordered = TRUE,   
   spacing = 'm',    
-  align = 'c'    )
+  align = 'c'        
+  )
   
   #pestaña3
   datos_filtrados_relacion <- reactive({
@@ -584,11 +610,105 @@ server <- function(input, output, session){
         Canción = Track, 
         Artista = Artist, 
         Bailabilidad = Danceability, 
-        "Polaridad Emocional" = Valence
+        Polaridad Emocional = Valence
       )
     
     return(top_datos)
   }, digits = 2, align = 'c') # 2 decimales y centrado
+  
+  #pestaña5
+  #cargar los géneros
+  observe({
+    generos_disponibles <- unique(dataset$Genre)
+    generos_disponibles <- generos_disponibles[!is.na(generos_disponibles)]
+    
+    updateSelectInput(session, "rec_genero",
+                      choices = c("Todos", sort(generos_disponibles)))
+  })
+  
+  #filtrar los artistas dependiendo del género seleccionado
+  observe({
+    req(input$rec_genero)
+    
+    if (input$rec_genero == "Todos") {
+      artistas_disponibles <- unique(dataset$Artist)
+    } else {
+      artistas_disponibles <- dataset$Artist[dataset$Genre == input$rec_genero]
+    }
+    artistas_disponibles <- artistas_disponibles[!is.na(artistas_disponibles)]
+    
+    updateSelectInput(session, "rec_artista",
+                      choices = c("Todos", sort(unique(artistas_disponibles))),
+                      selected = "Todos") 
+  })
+  
+  #para filtrar y seleccionar una canción aleatoria
+  cancion_aleatoria <- eventReactive(input$btn_recomendar, {
+    req(dataset)
+    datos <- dataset
+    
+    #para filtrar por género
+    if (input$rec_genero != "Todos") {
+      datos <- subset(datos, Genre == input$rec_genero)
+    }
+    
+    #para filtrar por artista (solo si se seleccionó uno)
+    if (input$rec_artista != "Todos") {
+      datos <- subset(datos, Artist == input$rec_artista)
+    }
+    
+    #para filtrat por danceability, energy y valence
+    datos <- subset(datos,
+                    Danceability >= input$rec_danceability[1] & Danceability <= input$rec_danceability[2] &
+                      Energy >= input$rec_energy[1] & Energy <= input$rec_energy[2] &
+                      Valence >= input$rec_valence[1] & Valence <= input$rec_valence[2])
+    if (nrow(datos) == 0) {
+      return(NULL)
+    }
+    
+    #para la selección aleatoria
+    fila_aleatoria <- sample(1:nrow(datos), 1)
+    return(datos[fila_aleatoria, , drop = FALSE])
+  })
+  
+  #para mostrar la información de la canción recomendada
+  output$resultado_recomendacion <- renderUI({
+    cancion <- cancion_aleatoria()
+    
+    if (is.null(cancion)) {
+      HTML("<p style='color:red;'>No se encontraron canciones que cumplan con los criterios seleccionados.</p>")
+    } else {
+      track_nombre   <- cancion$Track[[1]]
+      artista_nombre <- cancion$Artist[[1]]
+      tipo_album     <- cancion$Album_type[[1]]
+      genero_cancion <- cancion$Genre[[1]]
+      link_columna   <- cancion$Link[[1]]
+      
+      url_cancion <- if(!is.na(link_columna) && link_columna != "") link_columna else "#"
+      
+      #breve descripción de cada género
+      descripcion_genero <- switch(genero_cancion,
+                                   "Pop" = "Género musical moderno y comercial, caracterizado por sus melodías pegadizas y su gran popularidad entre un público amplio.",
+                                   "Rock" = "Género musical energético y expresivo, caracterizado por el protagonismo de las guitarras, los ritmos intensos y su gran influencia en la cultura popular.",
+                                   "Rap" = "Género musical urbano, moderno y expresivo, caracterizado por sus rimas, su ritmo marcado y la transmisión de mensajes y experiencias personales a través de sus letras.",
+                                   "Reggaetón" = "Género musical urbano y moderno, caracterizado por sus ritmos contagiosos, su estilo bailable y la fusión de influencias latinas y del hip-hop.",
+                                   "K-pop" = "Género musical dinámico y contemporáneo, reconocido por combinar distintos estilos, sus melodías pegadizas, ritmos contagiosos y coreografías llamativas.",
+                                   "Electrónica" = "Género musical moderno y versátil, caracterizado por el uso de sonidos sintetizados, ritmos repetitivos y una gran variedad de estilos orientados al baile y la experimentación sonora.",
+                                   "R&B" = "Género musical moderno y melódico, caracterizado por la mezcla de soul y pop, sus ritmos suaves y su combinación de ritmos relajados con voces expresivas y letras emocionales.",
+                                   "Alternative" = "Género musical moderno y diverso, caracterizado por su sonido poco convencional, la mezcla de distintos estilos y su enfoque en la libertad creativa, la innovación y la expresión personal.")
+      
+      tagList(
+        p(strong("Nombre (Track): "), track_nombre),
+        p(strong("Artista (Artist): "), artista_nombre),
+        p(strong("Tipo de lanzamiento (Album_type): "), tipo_album),
+        p(strong("Género (Genre): "), genero_cancion),
+        p(strong("Enlace: "), a("Escuchar canción en Spotify", href = url_cancion, target = "_blank")),
+        br(),
+        p(strong("Sobre el género: "), descripcion_genero)
+      )
+    }
+  })
 }
 
+#ejecutar la aplicación
 shinyApp(ui = ui, server = server)
