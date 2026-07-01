@@ -73,8 +73,7 @@ server <- function(input, output, session) {
     axis.title.x = element_text(size = 14, face = "bold", hjust = 0.5, margin = margin(t = 15, b=12))
   )
   
-  paleta <- c("#1DB954", "#6B8E23", "#A0522D", "#DEB887", "#5D4037", "#B8860B", "#A52A2A", "#D2691E")
-  
+  paleta <- c("darkgreen", "forestgreen", "seagreen", "mediumseagreen", "limegreen","yellowgreen", "palegreen", "springgreen4") 
   
   datos_filtrados <- reactive({
     if(is.null(input$gen_filter) || length(input$gen_filter) == 0) return(dataset)
