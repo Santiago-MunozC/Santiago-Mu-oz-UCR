@@ -34,7 +34,12 @@ ui <- fluidPage(
                    hr(),
                    
                    h4("Interpretación del Patrón"),
-                   textOutput("texto_interpretacion")
+                   textOutput("texto_interpretacion"),
+                   
+                   hr(),
+                   
+                   h4("Top 3 Canciones con Mayor Bailabilidad y Positividad"),
+                   tableOutput("tabla_top_canciones")
                  )
                )
       )
@@ -50,7 +55,7 @@ server <- function(input, output) {
     datos_filtrados <- dataset %>%
       filter(Genre == input$filtro_genero) 
     
-    #Gráfico
+    #Gráfico densidad
     ggplot(datos_filtrados, aes(x = Danceability, y = Valence)) +
       geom_density_2d_filled(alpha = 0.85) +
       geom_point(alpha = 0.3, size = 1.2, color = "black")+
@@ -95,6 +100,31 @@ server <- function(input, output) {
       return("El género Alternative muestra un núcleo central bien definido en la región media-baja del gráfico. Su punto de máxima densidad indica que la mayoría de los temas se sitúan en una bailabilidad moderada (entre 0.55 y 0.62) con una positividad emocional intermedia o neutra (Valence entre 0.38 y 0.45). Sin embargo, tiene una amplia dispersión hacia el cuadrante inferior izquierdo, reflejando la presencia de subgrupos de canciones más acústicas, lentas y de carácter melancólico.")
     }
   })
+  
+# Lógica del Servidor para filtrar y construir la Tabla del Top Canciones
+  output$tabla_top_canciones <- renderTable({
+    
+    top_datos <- dataset %>%
+      filter(Genre == input$filtro_genero) %>%
+# Esto prioriza las canciones que están más cerca del extremo superior derecho (1,1).
+      mutate(Indice_Top = Danceability + Valence) %>%
+      arrange(desc(Indice_Top)) %>%
+      
+      head(3) %>%
+      
+# 5. Seleccionamos y renombramos las columnas visibles para el usuario.
+# Ajusta "Track" y "Artist" si en tu Excel se llaman diferente (ej. Cancion, Artista).
+      
+      select(
+        `Canción` = Track, 
+        `Artista` = Artist, 
+        `Bailabilidad` = Danceability, 
+        `Positividad Emocional` = Valence
+      )
+    
+    return(top_datos)
+  }, digits = 2, align = 'c') # 2 decimales y centrado
+  
 }
 
 shinyApp(ui = ui, server = server)
