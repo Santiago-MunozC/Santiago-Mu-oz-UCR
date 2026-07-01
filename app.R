@@ -62,11 +62,13 @@ server <- function(input, output) {
       geom_density2d(color = "white", alpha = 0.4, linewidth = 0.3)+
       scale_x_continuous(limits = c(0,1), expand = c(0,0))+
       scale_y_continuous(limits = c(0,1), expand = c(0,0))+
-      scale_fill_viridis_d(option = "plasma")+
+      scale_fill_manual(
+        values = colorRampPalette(c("#111111", "#052e16", "#15803d", "#22c55e", "#4ade80", "#22ff00"))(14)
+      ) +
       labs(title = paste("Concentración de canciones para el género:", input$filtro_genero), 
            subtitle = "Las zonas encendidas muestran la mayor concentración de canciones",
-           x = "Bailabilidad (Danceability)",
-           y = "Positividad Emocional (Valence)",
+           x = "Danceability",
+           y = "Valence",
            fill = "Densidad") +
       theme_minimal() +
       theme(text = element_text(size = 14),
@@ -106,15 +108,13 @@ server <- function(input, output) {
     
     top_datos <- dataset %>%
       filter(Genre == input$filtro_genero) %>%
-# Esto prioriza las canciones que están más cerca del extremo superior derecho (1,1).
+# Esto prioriza las canciones que están más cerca del extremo superior derecho.
       mutate(Indice_Top = Danceability + Valence) %>%
       arrange(desc(Indice_Top)) %>%
       
       head(3) %>%
       
-# 5. Seleccionamos y renombramos las columnas visibles para el usuario.
-# Ajusta "Track" y "Artist" si en tu Excel se llaman diferente (ej. Cancion, Artista).
-      
+# Seleccionamos y renombramos las columnas visibles para el usuario.
       select(
         `Canción` = Track, 
         `Artista` = Artist, 
