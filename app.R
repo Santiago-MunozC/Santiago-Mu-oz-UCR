@@ -26,19 +26,19 @@ ui <- fluidPage(
                sidebarPanel(
                  selectInput("var_explorar", "Seleccione una variable para visualizar:",
                              choices = list(
-                               "Cuantitativas" = c("Bailabilidad" = "Danceability",
-                                                   "Energía" = "Energy",
-                                                   "Cáracter emocional" = "Valence",
-                                                   "Probabilidad de ser instrumental" = "Instrumentalness",
-                                                   "Duración en minutos" = "Duration_min",
-                                                   "Probabilidad de ser una grabación en vivo" = "Liveness",
-                                                   "Volumen promedio (dB)" = "Loudness",
-                                                   "Contenido hablado" = "Speechiness",
-                                                   "Probabilidad de ser acústica" = "Acousticness",
-                                                   "Ritmo (BPM)" = "Tempo"),
-                               "Cualitativas" = c("Tipo de Álbum" = "Album_type",
-                                                  "Plataforma" = "most_playedon",
-                                                  "Género musical" = "Genre")
+                               "Cuantitativas" = c("Danceability" = "Danceability",
+                                                   "Energy" = "Energy",
+                                                   "Valence" = "Valence",
+                                                   "Instrumentalness" = "Instrumentalness",
+                                                   "Duration_min" = "Duration_min",
+                                                   "Liveness" = "Liveness",
+                                                   "Loudness" = "Loudness",
+                                                   "Speechiness" = "Speechiness",
+                                                   "Acousticness" = "Acousticness",
+                                                   "Tempo" = "Tempo"),
+                               "Cualitativas" = c("Album_type" = "Album_type",
+                                                  "most_playedon" = "most_playedon",
+                                                  "Genre" = "Genre")
                              )
                  )
                ),
