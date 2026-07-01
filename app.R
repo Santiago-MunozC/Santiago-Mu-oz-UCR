@@ -19,8 +19,9 @@ dataset <- read_excel("dataset.xlsx")
 
 #ui
 ui <- navbarPage(
-  title = "Music Explorer: Análisis interactivo de canciones y artistas",
- 
+  title = "Music Explorer",
+  
+  #CSS global (se coloca en el argumento 'header', que Shiny inserta antes del contenido de cada pestaña)
   header = tags$head(
     tags$style(HTML("
       body { background-color: #F9F9F9; color: #333; font-family: 'Arial', sans-serif; }
@@ -100,10 +101,31 @@ ui <- navbarPage(
                tableOutput("tabla_genero")
              )
            )
-  ))
-
-
-#servidor
+  ),
+  
+  #pestaña3
+  tabPanel("Energy vs Loudness",
+           titlePanel("Relación entre Energy y Loudness"),
+           sidebarLayout(
+             sidebarPanel(
+               selectInput("genero", #escoger entre categorías
+                           "Seleccione un género:",
+                           choices = unique(dataset$Genre))
+             ),
+             
+             #gráfico de distribución
+             mainPanel(
+               plotOutput("grafico"),
+               br(),
+               textOutput("cantidad"),
+               br(),
+               textOutput("correlacion"),
+               br(),
+               textOutput("interpretacion")
+             )
+           ))
+  
+  #servidor
 server <- function(input, output, session){
   
   #pestaña1  
@@ -390,7 +412,77 @@ server <- function(input, output, session){
   bordered = TRUE,   
   spacing = 'm',    
   align = 'c'    )
-}
-
-shinyApp(ui = ui, server = server)
-
+  
+  #pestaña3
+  datos_filtrados_relacion <- reactive({
+    subset(dataset, Genre == input$genero)
+  })
+  
+  output$grafico <- renderPlot({
+    ggplot(
+      datos_filtrados_relacion(),
+      aes(x = Loudness, y = Energy)
+    ) +
+      
+      geom_point(
+        color = "limegreen",
+        size = 3
+      ) +
+      
+      geom_smooth(
+        method = "lm",
+        se = FALSE,
+        color = "darkblue",
+        linewidth = 1.2
+      ) +     
+      
+      labs(
+        title = paste(
+          "Relación entre Energy y Loudness:",
+          input$genero
+        ),
+        x = "Loudness",
+        y = "Energy"
+      ) +
+      
+      theme_minimal()
+  })
+  
+  output$cantidad <- renderText({
+    paste(
+      "Cantidad de canciones analizadas:",
+      nrow(datos_filtrados_relacion())
+    )
+    
+  })
+  
+  output$correlacion <- renderText({
+    r <- cor(
+      datos_filtrados_relacion()$Loudness,
+      datos_filtrados_relacion()$Energy
+    )
+    
+    paste(
+      "Coeficiente de correlación:",
+      round(r,3)
+    )
+  })
+  
+  output$interpretacion <- renderText({
+    r <- cor(
+      datos_filtrados_relacion()$Loudness,
+      datos_filtrados_relacion()$Energy
+    )
+    
+    if(r >= 0.7){
+      "Interpretación: Existe una relación fuerte entre Loudness y Energy."
+      
+    } else if(r >= 0.3){
+      "Interpretación: Existe una relación moderada entre Loudness y Energy."
+      
+    } else {
+      "Interpretación: La relación entre Loudness y Energy es débil."
+      
+    }
+    
+  }) } shinyApp(ui = ui, server = server)
