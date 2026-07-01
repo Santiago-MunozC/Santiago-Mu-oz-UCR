@@ -14,7 +14,7 @@ library(readxl)
 library(dplyr)
 
 # Carga de datos
-View(dataset)
+dataset <- read_excel("dataset.xlsx")
 
 # 1. Interfaz de Usuario 
 ui <- fluidPage(
