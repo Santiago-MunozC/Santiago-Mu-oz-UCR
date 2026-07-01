@@ -52,14 +52,14 @@ server <- function(input, output) {
     ) +
       
       geom_point(
-        color = "navy",
+        color = "limegreen",
         size = 3
       ) +
       
       geom_smooth(
-        method = "lm",          #modelo lineal, error estándar
+        method = "lm",
         se = FALSE,
-        color = "gold",
+        color = "darkblue",
         linewidth = 1.2
       ) +     
       
