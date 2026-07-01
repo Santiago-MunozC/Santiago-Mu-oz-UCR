@@ -21,7 +21,6 @@ dataset <- read_excel("dataset.xlsx")
 ui <- navbarPage(
   title = "Music Explorer",
   
-  #CSS global (se coloca en el argumento 'header', que Shiny inserta antes del contenido de cada pestaña)
   header = tags$head(
     tags$style(HTML("
       body { background-color: #F9F9F9; color: #333; font-family: 'Arial', sans-serif; }
@@ -123,8 +122,9 @@ ui <- navbarPage(
                br(),
                textOutput("interpretacion")
              )
-           ))
-  
+           )
+  ))
+
   #servidor
 server <- function(input, output, session){
   
@@ -485,4 +485,6 @@ server <- function(input, output, session){
       
     }
     
-  }) } shinyApp(ui = ui, server = server)
+  }) } 
+
+shinyApp(ui = ui, server = server)
