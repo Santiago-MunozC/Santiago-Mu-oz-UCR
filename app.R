@@ -344,6 +344,7 @@ server <- function(input, output, session){
       p
       
     } else {
+      
       #gráfico para variables cualitativas
       ggplot(dataset, aes(x = .data[[input$var_explorar]])) +
         geom_bar(
@@ -583,7 +584,7 @@ server <- function(input, output, session){
         Canción = Track, 
         Artista = Artist, 
         Bailabilidad = Danceability, 
-        Polaridad Emocional = Valence
+        "Polaridad Emocional" = Valence
       )
     
     return(top_datos)
